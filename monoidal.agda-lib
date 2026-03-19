@@ -1,0 +1,3 @@
+name: monoidal
+depend: cubical
+include: .
