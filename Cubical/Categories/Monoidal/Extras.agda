@@ -33,9 +33,11 @@ module MonoidalExtras {ℓ ℓ'} (M : MonoidalCategory ℓ ℓ') where
 
   open ⊗notation public
 
+  -- the naturality of unitors and its consequences
+  
   ⊗ₕIdR : ∀ {x y} (f g : C [ x , y ])
-       → f ⊗ₕ idᵤ ≡ g ⊗ₕ idᵤ
-       → f ≡ g
+        → f ⊗ₕ idᵤ ≡ g ⊗ₕ idᵤ
+        → f ≡ g
   ⊗ₕIdR {x} {y} f g e = ⋆CancelL (_ , ρ .nIso x)
     (ρ⟨ x ⟩ ⋆ f          ≡⟨ sym (ρ .trans .N-hom f) ⟩
      (f ⊗ₕ id ⋆ ρ⟨ y ⟩)  ≡⟨ ⟨ e ⟩⋆⟨ refl ⟩ ⟩
@@ -43,8 +45,8 @@ module MonoidalExtras {ℓ ℓ'} (M : MonoidalCategory ℓ ℓ') where
      ρ⟨ x ⟩ ⋆ g          ∎)
 
   ⊗ₕIdL : ∀ {x y} (f g : C [ x , y ])
-       → idᵤ ⊗ₕ f ≡ idᵤ ⊗ₕ g
-       → f ≡ g
+        → idᵤ ⊗ₕ f ≡ idᵤ ⊗ₕ g
+        → f ≡ g
   ⊗ₕIdL {x} {y} f g e = ⋆CancelL (_ , η .nIso x)
     (η⟨ x ⟩ ⋆ f          ≡⟨ sym (η .trans .N-hom f) ⟩
      (idᵤ ⊗ₕ f) ⋆ η⟨ y ⟩ ≡⟨ ⟨ e ⟩⋆⟨ refl ⟩ ⟩
