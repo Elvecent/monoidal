@@ -31,23 +31,30 @@ module MonoidalExtras {ℓ ℓ'} (M : MonoidalCategory ℓ ℓ') where
     α-⁻¹ : ∀ { x y z } → Hom[ (x ⊗ y) ⊗ z , x ⊗ (y ⊗ z) ]
     α-⁻¹ {x} {y} {z} = α⁻¹⟨ x , y , z ⟩
 
+    ⟨_⟩⊗ₕ⟨_⟩ : ∀ {x y w z}
+                 {f f' : C [ x , y ]} {g g' : C [ w , z ]}
+             → f ≡ f'
+             → g ≡ g'
+             → f ⊗ₕ g ≡ f' ⊗ₕ g'
+    ⟨ ≡f ⟩⊗ₕ⟨ ≡g ⟩ = cong₂ _⊗ₕ_ ≡f ≡g
+
   open ⊗notation public
 
   -- the naturality of unitors and its consequences
   
-  ⊗ₕIdR : ∀ {x y} (f g : C [ x , y ])
+  ⊗ₕCancelIdR : ∀ {x y} (f g : C [ x , y ])
         → f ⊗ₕ idᵤ ≡ g ⊗ₕ idᵤ
         → f ≡ g
-  ⊗ₕIdR {x} {y} f g e = ⋆CancelL (_ , ρ .nIso x)
+  ⊗ₕCancelIdR {x} {y} f g e = ⋆CancelL (_ , ρ .nIso x)
     (ρ⟨ x ⟩ ⋆ f          ≡⟨ sym (ρ .trans .N-hom f) ⟩
      (f ⊗ₕ id ⋆ ρ⟨ y ⟩)  ≡⟨ ⟨ e ⟩⋆⟨ refl ⟩ ⟩
      (g ⊗ₕ id ⋆ ρ⟨ y ⟩)  ≡⟨ ρ .trans .N-hom g ⟩
      ρ⟨ x ⟩ ⋆ g          ∎)
 
-  ⊗ₕIdL : ∀ {x y} (f g : C [ x , y ])
+  ⊗ₕCancelIdL : ∀ {x y} (f g : C [ x , y ])
         → idᵤ ⊗ₕ f ≡ idᵤ ⊗ₕ g
         → f ≡ g
-  ⊗ₕIdL {x} {y} f g e = ⋆CancelL (_ , η .nIso x)
+  ⊗ₕCancelIdL {x} {y} f g e = ⋆CancelL (_ , η .nIso x)
     (η⟨ x ⟩ ⋆ f          ≡⟨ sym (η .trans .N-hom f) ⟩
      (idᵤ ⊗ₕ f) ⋆ η⟨ y ⟩ ≡⟨ ⟨ e ⟩⋆⟨ refl ⟩ ⟩
      (idᵤ ⊗ₕ g) ⋆ η⟨ y ⟩ ≡⟨ η .trans .N-hom g ⟩
@@ -64,3 +71,26 @@ module MonoidalExtras {ℓ ℓ'} (M : MonoidalCategory ℓ ℓ') where
   ρ⊗ {x} = ⋆CancelR (_ , ρ .nIso x)
     (ρ⟨ _ ⟩ ⋆ ρ⟨ x ⟩         ≡⟨ sym (ρ .trans .N-hom _) ⟩
      (ρ⟨ x ⟩ ⊗ₕ id ⋆ ρ⟨ x ⟩) ∎)
+
+  -- times id
+
+  ⊗ₕSplitL : ∀ {x y} (f g : C [ x , y ])
+           → f ⊗ₕ g  ≡ f ⊗ₕ id ⋆ id ⊗ₕ g
+  ⊗ₕSplitL f g =
+    f ⊗ₕ g               ≡⟨ sym ⟨ ⋆IdR f ⟩⊗ₕ⟨ ⋆IdL g ⟩ ⟩
+    (f ⋆ id) ⊗ₕ (id ⋆ g) ≡⟨ F-seq (f , id) (id , g) ⟩
+    f ⊗ₕ id ⋆ id ⊗ₕ g    ∎
+
+  ⊗ₕSplitR : ∀ {x y} (f g : C [ x , y ])
+           → f ⊗ₕ g  ≡ id ⊗ₕ g ⋆ f ⊗ₕ id
+  ⊗ₕSplitR f g =
+    f ⊗ₕ g               ≡⟨ sym ⟨ ⋆IdL f ⟩⊗ₕ⟨ ⋆IdR g ⟩ ⟩
+    (id ⋆ f) ⊗ₕ (g ⋆ id) ≡⟨ F-seq (id , g) (f , id) ⟩
+    id ⊗ₕ g ⋆ f ⊗ₕ id    ∎
+
+  ⊗ₕIdComm : ∀ {x y} (f g : C [ x , y ])
+            → f ⊗ₕ id ⋆ id ⊗ₕ g ≡ id ⊗ₕ g ⋆ f ⊗ₕ id
+  ⊗ₕIdComm f g =
+    f ⊗ₕ id ⋆ id ⊗ₕ g ≡⟨ sym (⊗ₕSplitL f g) ⟩
+    f ⊗ₕ g            ≡⟨ ⊗ₕSplitR f g ⟩
+    id ⊗ₕ g ⋆ f ⊗ₕ id ∎
