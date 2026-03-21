@@ -96,6 +96,8 @@ module MonoidalExtras {ℓ ℓ'} (M : MonoidalCategory ℓ ℓ') where
     f ⊗ₕ g            ≡⟨ ⊗ₕSplitR f g ⟩
     id ⊗ₕ g ⋆ f ⊗ₕ id ∎
 
+  -- misc
+
   ⊗ₕIso : ∀ {x y w z}
           → (f : CatIso C x y) (g : CatIso C w z)
           → CatIso C (x ⊗ w) (y ⊗ z)
