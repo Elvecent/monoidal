@@ -3,6 +3,7 @@
 module Cubical.Categories.Monoidal.Extras where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Categories.Constructions.BinProduct
 open import Cubical.Categories.Category.Base
 open import Cubical.Categories.Functor.Base
 open import Cubical.Categories.Morphism
@@ -94,3 +95,8 @@ module MonoidalExtras {ℓ ℓ'} (M : MonoidalCategory ℓ ℓ') where
     f ⊗ₕ id ⋆ id ⊗ₕ g ≡⟨ sym (⊗ₕSplitL f g) ⟩
     f ⊗ₕ g            ≡⟨ ⊗ₕSplitR f g ⟩
     id ⊗ₕ g ⋆ f ⊗ₕ id ∎
+
+  ⊗ₕIso : ∀ {x y w z}
+          → (f : CatIso C x y) (g : CatIso C w z)
+          → CatIso C (x ⊗ w) (y ⊗ z)
+  ⊗ₕIso f g = F-Iso {F = ─⊗─} (CatIso× C C f g)
