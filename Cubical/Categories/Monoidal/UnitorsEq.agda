@@ -1,6 +1,6 @@
 {-# OPTIONS --cubical --guardedness #-}
 
-module Kelly where
+module Cubical.Categories.Monoidal.UnitorsEq where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Categories.Category.Base
@@ -9,7 +9,6 @@ open import Cubical.Categories.Morphism
 open import Cubical.Categories.Isomorphism
 open import Cubical.Categories.Monoidal.Base
 open import Cubical.Categories.Constructions.BinProduct
-
 
 open import Cubical.Categories.Monoidal.Extras
 
