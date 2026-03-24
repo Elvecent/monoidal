@@ -8,9 +8,13 @@ open import Cubical.Categories.Functor.Base
 open import Cubical.Categories.Morphism
 open import Cubical.Categories.Isomorphism
 open import Cubical.Categories.Monoidal.Base
+open import Cubical.Categories.Constructions.BinProduct
+
 
 open import Cubical.Categories.Monoidal.Extras
 
+-- lemma from Kelly64
+-- about not needed agreeing unitors as an axiom
 
 module _ {ℓ ℓ'} (M : MonoidalCategory ℓ ℓ') where
   open MonoidalCategory M
@@ -21,74 +25,88 @@ module _ {ℓ ℓ'} (M : MonoidalCategory ℓ ℓ') where
   open NatIso
   open NatTrans
   open isIso
+
+  ρρ⁻¹ : ∀ {x} → ρᵤ ⊗ₕ id{x} ⋆ ρᵤ⁻¹ ⊗ₕ id ≡ id
+  ρρ⁻¹ =
+    ρᵤ ⊗ₕ id ⋆ ρᵤ⁻¹ ⊗ₕ id    ≡⟨ sym (F-seq _ _) ⟩
+    (ρᵤ ⋆ ρᵤ⁻¹) ⊗ₕ (id ⋆ id) ≡⟨
+      ⟨ ρ .nIso unit .ret ⟩⊗ₕ⟨ ⋆IdL id ⟩
+    ⟩
+    id ⊗ₕ id                 ≡⟨ F-id ⟩
+    id                       ∎
+
+  α=ρ⁻¹⊗ₕη : ∀ {x y}
+           → α⟨ x , unit , y ⟩ ≡ ρ⁻¹⟨ x ⟩ ⊗ₕ η⟨ y ⟩
+  α=ρ⁻¹⊗ₕη {x} {y} =
+    ⋆InvRMove iso (triangle _ _) ∙ sym (⊗ₕSplitR _ _)
+    where iso = (⊗ₕIso (_ , ρ .nIso x) idCatIso)
+
+  ⋆AssocMid : ∀ {a b c d e}
+              (f : C [ a , b ]) (g : C [ b , c ])
+              (h : C [ c , d ]) (k : C [ d , e ])
+            → f ⋆ (g ⋆ h) ⋆ k ≡ (f ⋆ g) ⋆ (h ⋆ k)
+  ⋆AssocMid f g h k =
+    f ⋆ (g ⋆ h) ⋆ k   ≡⟨ sym (⋆Assoc _ _ _) ⟩
+    (f ⋆ g ⋆ h) ⋆ k   ≡⟨ ⟨ sym (⋆Assoc _ _ _) ⟩⋆⟨ refl ⟩ ⟩
+    ((f ⋆ g) ⋆ h) ⋆ k ≡⟨ ⋆Assoc _ _ _ ⟩
+    (f ⋆ g) ⋆ (h ⋆ k) ∎
   
+  private module _ {x y : ob} where
+    α⋆ρ⁻¹⊗id :
+      C [ unit ⊗ (x ⊗ y) , ((unit ⊗ unit) ⊗ x) ⊗ y ]
+    α⋆ρ⁻¹⊗id =
+      α- ⋆ ((ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id)
+
+    α⋆ρ⁻¹⊗id-Iso : ∀ {x y}
+                 → CatIso C
+                     (unit ⊗ (x ⊗ y))
+                     (((unit ⊗ unit) ⊗ x) ⊗ y)
+    α⋆ρ⁻¹⊗id-Iso = ⋆Iso
+      (_ , α .nIso _)
+      (⊗ₕIso (⊗ₕIso inv-ρ idCatIso) idCatIso)
+      where inv-ρ = invIso (_ , ρ .nIso _)
+
+    ρ⁻¹id = (ρᵤ⁻¹ ⊗ₕ id{x}) ⊗ₕ id{y}
+
   Kellyη : ∀ x y
          → η⟨ x ⊗ y ⟩
          ≡ α⟨ unit , x , y ⟩ ⋆ η⟨ x ⟩ ⊗ₕ id
   Kellyη x y =
     ⊗ₕCancelIdL η⟨ x ⊗ y ⟩ (α- ⋆ η⟨ x ⟩ ⊗ₕ id)
-      (⋆CancelR watIso (sym pentId))
+      (⋆CancelR (α⋆ρ⁻¹⊗id-Iso {x} {y}) (sym pentId))
     where
-      ρ⁻¹ = invIso (_ , (ρ .nIso _))
-      ρρ⁻¹ =
-        ρᵤ ⊗ₕ id ⋆ ρᵤ⁻¹ ⊗ₕ id    ≡⟨ sym (F-seq _ _) ⟩
-        (ρᵤ ⋆ ρᵤ⁻¹) ⊗ₕ (id ⋆ id) ≡⟨ ⟨ ρ .nIso unit .ret ⟩⊗ₕ⟨ ⋆IdL id ⟩ ⟩
-        id ⊗ₕ id                 ≡⟨ F-id ⟩
-        id                       ∎
-
-      wat = α⟨ unit , x , y ⟩ ⋆ ((ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id)
-      watIso = ⋆Iso
-        (_ , α .nIso ( unit , x , y ))
-        (⊗ₕIso (⊗ₕIso ρ⁻¹ idCatIso) idCatIso)
-
-      help =
-        id ⊗ₕ η⟨ x ⟩ ⋆ ρᵤ⁻¹ ⊗ₕ id ≡⟨ ⟨ sym (triangle unit x) ⟩⋆⟨ refl ⟩ ⟩
-        (α⟨ unit , unit , x ⟩ ⋆ ρᵤ ⊗ₕ id) ⋆ ρᵤ⁻¹ ⊗ₕ id    ≡⟨ ⋆Assoc _ _ _ ⟩
-        α⟨ unit , unit , x ⟩ ⋆ ρᵤ ⊗ₕ id ⋆ ρᵤ⁻¹ ⊗ₕ id      ≡⟨ ⟨ refl ⟩⋆⟨ sym (F-seq _ _) ⟩ ⟩
-        α⟨ unit , unit , x ⟩ ⋆ ((ρᵤ ⋆ ρᵤ⁻¹) ⊗ₕ (id ⋆ id)) ≡⟨ ⟨ refl ⟩⋆⟨ ⟨ ρ .nIso unit .ret ⟩⊗ₕ⟨ ⋆IdL id ⟩ ⟩ ⟩
-        α⟨ unit , unit , x ⟩ ⋆ (id ⊗ₕ id)                 ≡⟨ ⟨ refl ⟩⋆⟨ F-id ⟩ ⟩
-        α⟨ unit , unit , x ⟩ ⋆ id                         ≡⟨ ⋆IdR α⟨ unit , unit , x ⟩ ⟩
-        α⟨ unit , unit , x ⟩                              ∎
-
-      help2 =
-        (id ⊗ₕ η⟨ x ⟩) ⊗ₕ id ⋆ (ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id ≡⟨ sym (F-seq _ _) ⟩
-        ((id ⊗ₕ η⟨ x ⟩ ⋆ ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ (id ⋆ id))  ≡⟨ ⟨ refl ⟩⊗ₕ⟨ ⋆IdL id ⟩ ⟩
-        ((id ⊗ₕ η⟨ x ⟩ ⋆ ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id)       ∎
-
       pentId =
-        id ⊗ₕ (α⟨ unit , x , y ⟩ ⋆ η⟨ x ⟩ ⊗ₕ id) ⋆ wat ≡⟨ refl ⟩
-        id ⊗ₕ (α⟨ unit , x , y ⟩ ⋆ η⟨ x ⟩ ⊗ₕ id) ⋆ α⟨ unit , x , y ⟩ ⋆ (ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id ≡⟨
-          ⟨ ⟨ sym (⋆IdL id) ⟩⊗ₕ⟨ refl ⟩ ⟩⋆⟨ refl ⟩
+        id ⊗ₕ (α⟨ unit , x , y ⟩ ⋆ η⟨ x ⟩ ⊗ₕ id) ⋆ α⋆ρ⁻¹⊗id ≡⟨
+          ⟨ ⟨ sym (⋆IdL id) ⟩⊗ₕ⟨ refl ⟩ ∙ (F-seq _ _) ⟩⋆⟨ refl ⟩
         ⟩
-        ((id ⋆ id) ⊗ₕ (α⟨ unit , x , y ⟩ ⋆ η⟨ x ⟩ ⊗ₕ id)) ⋆ α⟨ unit , x , y ⟩ ⋆ (ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id ≡⟨
-          ⟨ F-seq _ _ ⟩⋆⟨ refl ⟩
-        ⟩
-        (id ⊗ₕ α⟨ unit , x , y ⟩ ⋆ id ⊗ₕ (η⟨ x ⟩ ⊗ₕ id)) ⋆ α⟨ unit , x , y ⟩ ⋆ (ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id ≡⟨
-          refl
-        ⟩
-        (id ⊗ₕ α⟨ unit , x , y ⟩ ⋆ id ⊗ₕ (η⟨ x ⟩ ⊗ₕ id)) ⋆ (α⟨ unit , x , y ⟩ ⋆ (ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id) ≡⟨
+        (id ⊗ₕ α- ⋆ id ⊗ₕ (η⟨ x ⟩ ⊗ₕ id)) ⋆ α⋆ρ⁻¹⊗id ≡⟨
           (⋆Assoc _ _ _) ∙ ⟨ refl ⟩⋆⟨ sym (⋆Assoc _ _ _) ⟩
         ⟩
-        id ⊗ₕ α⟨ unit , x , y ⟩ ⋆ (id ⊗ₕ (η⟨ x ⟩ ⊗ₕ id) ⋆ α⟨ unit , x , y ⟩) ⋆ (ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id ≡⟨
-          ⟨ refl ⟩⋆⟨ ⟨ α .trans .N-hom _ ⟩⋆⟨ refl ⟩ ⟩
+        id ⊗ₕ α- ⋆ (id ⊗ₕ (η⟨ x ⟩ ⊗ₕ id) ⋆ α-) ⋆ ρ⁻¹id ≡⟨
+          ⟨ refl ⟩⋆⟨ ⟨ α .trans .N-hom _ ⟩⋆⟨ refl ⟩ ∙ (⋆Assoc _ _ _) ⟩
         ⟩
-        id ⊗ₕ α⟨ unit , x , y ⟩ ⋆ (α⟨ unit , unit ⊗ x , y ⟩ ⋆ (id ⊗ₕ η⟨ x ⟩) ⊗ₕ id) ⋆ (ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id ≡⟨
-          ⟨ refl ⟩⋆⟨ ⋆Assoc _ _ _ ⟩
+        id ⊗ₕ α- ⋆ α- ⋆ ((id ⊗ₕ η⟨ x ⟩) ⊗ₕ id ⋆ ρ⁻¹id) ≡⟨
+          ⟨ refl ⟩⋆⟨ ⟨ refl ⟩⋆⟨ sym (F-seq _ _) ∙ ⟨ refl ⟩⊗ₕ⟨ ⋆IdL _ ⟩ ⟩ ⟩
         ⟩
-        id ⊗ₕ α⟨ unit , x , y ⟩ ⋆ α⟨ unit , unit ⊗ x , y ⟩ ⋆ ((id ⊗ₕ η⟨ x ⟩) ⊗ₕ id ⋆ ((ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id)) ≡⟨
-          ⟨ refl ⟩⋆⟨ ⟨ refl ⟩⋆⟨ help2 ⟩ ⟩
+        id ⊗ₕ α- ⋆ α- ⋆ ((id ⊗ₕ η⟨ x ⟩ ⋆ ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id) ≡⟨
+          ⟨ refl ⟩⋆⟨ ⟨ refl ⟩⋆⟨ ⟨ sym (α=ρ⁻¹⊗ₕη ∙ ⊗ₕSplitR _ _) ⟩⊗ₕ⟨ refl ⟩ ⟩ ⟩
         ⟩
-        id ⊗ₕ α⟨ unit , x , y ⟩ ⋆ α⟨ unit , unit ⊗ x , y ⟩ ⋆ ((id ⊗ₕ η⟨ x ⟩ ⋆ ρᵤ⁻¹ ⊗ₕ id) ⊗ₕ id) ≡⟨
-          ⟨ refl ⟩⋆⟨ ⟨ refl ⟩⋆⟨ ⟨ help ⟩⊗ₕ⟨ refl ⟩ ⟩ ⟩
+        id ⊗ₕ α- ⋆ α- ⋆ α- ⊗ₕ id ≡⟨
+          pentagon unit unit x y
         ⟩
-        id ⊗ₕ α⟨ unit , x , y ⟩ ⋆ α⟨ unit , unit ⊗ x , y ⟩ ⋆ α⟨ unit , unit , x ⟩ ⊗ₕ id ≡⟨ pentagon unit unit x y ⟩
-        α⟨ unit , unit , x ⊗ y ⟩ ⋆ α⟨ unit ⊗ unit , x , y ⟩ ≡⟨ ⟨ refl ⟩⋆⟨ sym (⋆IdL _) ⟩ ⟩
-        α⟨ unit , unit , x ⊗ y ⟩ ⋆ id ⋆ α⟨ unit ⊗ unit , x , y ⟩ ≡⟨ ⟨ refl ⟩⋆⟨ ⟨ sym ρρ⁻¹ ⟩⋆⟨ refl ⟩ ⟩ ⟩
-        α⟨ unit , unit , x ⊗ y ⟩ ⋆ (ρᵤ ⊗ₕ id ⋆ ρᵤ⁻¹ ⊗ₕ id) ⋆ α⟨ unit ⊗ unit , x , y ⟩ ≡⟨ (sym (⋆Assoc _ _ _)) ∙ ⟨ sym (⋆Assoc _ _ _) ⟩⋆⟨ refl ⟩ ∙ ⋆Assoc _ _ _ ⟩
-        (α⟨ unit , unit , x ⊗ y ⟩ ⋆ ρᵤ ⊗ₕ id) ⋆ (ρᵤ⁻¹ ⊗ₕ id ⋆ α⟨ unit ⊗ unit , x , y ⟩) ≡⟨ ⟨ triangle _ _ ⟩⋆⟨ refl ⟩ ⟩
-        id ⊗ₕ η⟨ x ⊗ y ⟩ ⋆ (ρᵤ⁻¹ ⊗ₕ id ⋆ α⟨ unit ⊗ unit , x , y ⟩) ≡⟨ ⟨ refl ⟩⋆⟨  ⟨ ⟨ refl ⟩⊗ₕ⟨ sym F-id ⟩ ⟩⋆⟨ refl ⟩ ⟩ ⟩
-        id ⊗ₕ η⟨ x ⊗ y ⟩ ⋆ ( (ρᵤ⁻¹ ⊗ₕ (id ⊗ₕ id)) ⋆ α⟨ unit ⊗ unit , x , y ⟩ ) ≡⟨ ⟨ refl ⟩⋆⟨ α .trans .N-hom _ ⟩ ⟩
-        id ⊗ₕ η⟨ x ⊗ y ⟩ ⋆ wat ∎
+        α⟨ unit , unit , x ⊗ y ⟩ ⋆ α⟨ unit ⊗ unit , x , y ⟩ ≡⟨
+          ⟨ refl ⟩⋆⟨ sym (⋆IdL _) ∙ ⟨ sym ρρ⁻¹ ⟩⋆⟨ refl ⟩ ⟩
+        ⟩
+        α- ⋆ (ρᵤ ⊗ₕ id ⋆ ρᵤ⁻¹ ⊗ₕ id) ⋆ α- ≡⟨
+          ⋆AssocMid _ _ _ _ ∙ ⟨ triangle _ _ ⟩⋆⟨ refl ⟩
+        ⟩
+        id ⊗ₕ η⟨ x ⊗ y ⟩ ⋆ (ρᵤ⁻¹ ⊗ₕ id ⋆ α-) ≡⟨
+          ⟨ refl ⟩⋆⟨  ⟨ ⟨ refl ⟩⊗ₕ⟨ sym F-id ⟩ ⟩⋆⟨ refl ⟩ ⟩
+        ⟩
+        id ⊗ₕ η⟨ x ⊗ y ⟩ ⋆ ( (ρᵤ⁻¹ ⊗ₕ (id ⊗ₕ id)) ⋆ α- ) ≡⟨
+          ⟨ refl ⟩⋆⟨ α .trans .N-hom _ ⟩
+        ⟩
+        id ⊗ₕ η⟨ x ⊗ y ⟩ ⋆ α⋆ρ⁻¹⊗id ∎
   
   η≡ρ : ηᵤ ≡ ρᵤ
   η≡ρ = ⊗ₕCancelIdR _ _ (⋆CancelL (α- , α .nIso _)

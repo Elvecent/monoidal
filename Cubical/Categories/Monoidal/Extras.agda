@@ -75,14 +75,16 @@ module MonoidalExtras {ℓ ℓ'} (M : MonoidalCategory ℓ ℓ') where
 
   -- times id
 
-  ⊗ₕSplitL : ∀ {x y} (f g : C [ x , y ])
+  ⊗ₕSplitL : ∀ {x y w z}
+           → (f : C [ x , y ]) (g : C [ w , z ])
            → f ⊗ₕ g  ≡ f ⊗ₕ id ⋆ id ⊗ₕ g
   ⊗ₕSplitL f g =
     f ⊗ₕ g               ≡⟨ sym ⟨ ⋆IdR f ⟩⊗ₕ⟨ ⋆IdL g ⟩ ⟩
     (f ⋆ id) ⊗ₕ (id ⋆ g) ≡⟨ F-seq (f , id) (id , g) ⟩
     f ⊗ₕ id ⋆ id ⊗ₕ g    ∎
 
-  ⊗ₕSplitR : ∀ {x y} (f g : C [ x , y ])
+  ⊗ₕSplitR : ∀ {x y w z}
+           → (f : C [ x , y ]) (g : C [ w , z ])
            → f ⊗ₕ g  ≡ id ⊗ₕ g ⋆ f ⊗ₕ id
   ⊗ₕSplitR f g =
     f ⊗ₕ g               ≡⟨ sym ⟨ ⋆IdL f ⟩⊗ₕ⟨ ⋆IdR g ⟩ ⟩
